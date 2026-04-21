@@ -53,6 +53,18 @@ def action_yingjiguanli(driver, company):
     search_button.click()
     switch_to_new_window_if_any(driver, old_count)
     # 不在这里填字了，切完窗口直接撤退！
+def action_jiaotongbu(driver, company):
+    """交通运输部搜索交互"""
+    search_input = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "qt")))
+    search_input.clear()
+    search_input.send_keys(company)
+    search_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "button")))
+    old_count = len(driver.window_handles)
+    try:
+        search_button.click()
+    except:
+        driver.execute_script("arguments[0].click();", search_button)
+    switch_to_new_window_if_any(driver, old_count)
 
 '''应急管理：阶段三（截图前收尾）'''
 def post_action_yingjiguanli(driver, company):
@@ -148,7 +160,15 @@ WEB_CONFIG = {
     '生态环境部-一般检索': {'url': 'https://www.mee.gov.cn/searchnew/?searchword={company}', 'action': None, 'post_action': None},
     '应急管理': {'url': 'https://www.mem.gov.cn/', 'action': action_yingjiguanli, 'post_action': post_action_yingjiguanli},
     '住建部-一般检索': {'url': 'https://www.mohurd.gov.cn/api-gateway/jpaas-jsearch-web-server/search?serviceId=e2f3058e2a3b4f8abc93eb76e739e3e7&websiteid=&cateid=6ca0f12c0f0642ab8b1dc17028e12ea1&q={company}', 'action': None, 'post_action': None},
-    
+    '国家外汇管理局': {'url':'https://www.safe.gov.cn/safe/search/index.html?q={company}&siteid=safe&order=releasetime', 'action': None, 'post_action': None},
+    '中国人民银行-一般检索':{'url':'https://wzdig.pbc.gov.cn/search/pcRender?sr=score+desc&pageId=c177a85bd02b4114bebebd210809f691&ext=&pNo=1&q={company}', 'action': None, 'post_action': None},
+    '中国盐业协会':{'url':'https://www.cnsalt.cn/index/index/search.html?q={company}', 'action': None, 'post_action': None},
+    '中国电力企业联合会':{'url':'https://cec.org.cn/search/index.html?search={company}', 'action': None, 'post_action': None},
+    #'中国政府采购':{'url':"https://search.ccgp.gov.cn/bxsearch?searchtype=2&page_index=1&bidSort=0&buyerName=&projectId=&pinMu=0&bidType=0&dbselect=bidx&kw={company}&start_time=2025%3A10%3A20&end_time=2026%3A04%3A20&timeType=5&displayZone=&zoneId=&pppStatus=0&agentName=", 'action': None, 'post_action': None},
+    '交通运输部': {'url': 'https://www.mot.gov.cn/', 'action': action_jiaotongbu, 'post_action': None},
+    '人力资源和社会保障部':{'url':'https://www.mohrss.gov.cn/hsearch/?searchword={company}', 'action': None, 'post_action': None },
+    '安全生产领域失信生产经营单位': {'url': 'https://www.mem.gov.cn/', 'action': action_yingjiguanli, 'post_action': post_action_yingjiguanli},
+
     # === 证监会及监管核查 ===
     '证监会-一般检索': {'url': 'http://www.csrc.gov.cn/', 'action': action_zhengjianhui_normal, 'post_action': None},
     '证监会-政府公开信息': {'url': 'http://www.csrc.gov.cn/csrc/c100033/zfxxgk_zdgk.shtml', 'action': action_zhengjianhui_govern, 'post_action': None},
