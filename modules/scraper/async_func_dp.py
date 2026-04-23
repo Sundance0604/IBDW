@@ -8,7 +8,6 @@ import time
 
 '''深交所-监管措施 (包含纪律处分逻辑也一样)'''
 def action_shenjiaosuo_jgcs(page, company):
-
     time.sleep(1) 
     inp = page.ele('#ZQ_JGCS_tab1_txtGjz')
     inp.input(company, clear=True)
@@ -80,7 +79,7 @@ def post_action_yingjiguanli(page, company):
 def post_action_zhongguoyanye(page, company):
     page.ele('@name=q').input(company, clear=True)
 '''上交所-纪律处分/监管措施'''
-def action_shangjiaosuo(page):
+def action_shangjiaosuo(page, company):
     tab_xpath = "xpath://span[contains(@class, 'credibility') and text()='监管']"
     target_tab = page.ele(tab_xpath)
     target_tab.click(by_js=True)  
@@ -102,17 +101,36 @@ def action_zhengjianhui_normal(page, company):
     input_box = page.ele('#searchWord')
     input_box.input(company, clear=True)
     input_box.input('\n') # 模拟回车提交
-'''证监会-高级检索'''
+'''证监会-高级检索 '''
 def action_zhengjianhui_gaoji(page, company):
     input_box = page.ele('#searchWord')
     input_box.input(company, clear=True)
-    input_box.input('\n') # 模拟回车提交
-    page.wait.new_tab(timeout=5) 
-    new_page = page.latest_tab
-    search_btn_1 = new_page.ele('#highSearch')
-    search_btn_1.click(by_js=True)
-    search_btn_2 = new_page.ele('#advanceSearch')
-    search_btn_2.click(by_js=True)
+    
+    old_tabs = page.browser.tab_ids
+    input_box.input('\n') # 模拟回车提交，触发新窗口
+    
+    # 轮询等待新标签页产生
+    new_tab_id = None
+    for _ in range(25): 
+        time.sleep(0.2)
+        current_tabs = page.browser.tab_ids
+        diff = [t for t in current_tabs if t not in old_tabs]
+        if diff:
+            new_tab_id = diff[-1]
+            break
+
+    if new_tab_id:
+        new_page = page.browser.get_tab(new_tab_id)
+        
+        # 【核心防御】：等待高级搜索按钮彻底渲染出来再点击
+        search_btn_1 = new_page.ele('#highSearch', timeout=5)
+        if search_btn_1:
+            search_btn_1.click(by_js=True)
+            
+            # 等待第二个按钮出来
+            search_btn_2 = new_page.ele('#advanceSearch', timeout=5)
+            if search_btn_2:
+                search_btn_2.click(by_js=True)
 '''工信部-高级检索'''
 def action_gongxinbu_gaoji(page, company):
     adv_xpath = "xpath://span[@class='ui-search-btn-adv' and text()='高级检索']"
@@ -131,22 +149,40 @@ def action_gongxinbu_gaoji(page, company):
 '''中国人民银行-高级检索'''
 def action_renminyinhang_gaoji(page, company):
     time.sleep(1)
-    input_qAll = "xpath://input[@name='qAll']"
+    input_qAll = "xpath://input[@name='q']"
     search_input = page.ele(input_qAll)
     search_input.clear()
     search_input.input(company)
     search_input.run_js(f'this.value = "{company}";')
     time.sleep(1)
+    
+    # 1. 记录点击前的所有标签页 ID
+    old_tabs = page.browser.tab_ids
+    
     search_btn = page.ele('#button')
     search_btn.click(by_js=True)
-    page.wait.new_tab(timeout=5) 
-    new_page = page.latest_tab
-    new_page_search_input = new_page.ele('#q')
-    new_page_search_input.clear()
-    new_page_search_input.input(company)
-    new_page_search_input.run_js(f'this.value = "{company}";')
+    
+    # 2. 手写轮询等待新标签页产生（最多等 5 秒，完美替代 wait.new_tab）
+    new_tab_id = None
+    for _ in range(25): 
+        time.sleep(0.1)
+        current_tabs = page.browser.tab_ids
+        diff = [t for t in current_tabs if t not in old_tabs]
+        if diff:
+            new_tab_id = diff[-1]
+            break
+            
+    # 3. 如果成功抓到了新标签页
+    if new_tab_id:
+        new_page = page.browser.get_tab(new_tab_id)
+        # 【核心防御】：给 .ele() 加上 timeout=5，死死盯住这个输入框直到它渲染出来！
+        new_page_search_input = new_page.ele('#q', timeout=5)
+        if new_page_search_input:
+            new_page_search_input.clear()
+            new_page_search_input.input(company)
+            new_page_search_input.run_js(f'this.value = "{company}";')
 '''住建部-高级检索'''
-def action_zhujianshu_gaoji(page, company):
+def action_zhujianbu_gaoji(page, company):
     search_btn_1 = page.ele('#senior')
     search_btn_1.click(by_js=True)
     time.sleep(1)
@@ -176,7 +212,19 @@ def action_nongyenongcun_gaoji(page, company):
     search_input_2 = page.ele(input_xpath_2)
     search_input_2.clear()
     search_input_2.input(company)
-
+'''药监局-高级检索'''
+def action_yaojianju_gaoji(page, company):
+    search_btn_1_xpath = "xpath://a[contains(text(), '高级搜索')]"
+    search_btn_1 = page.ele(search_btn_1_xpath)
+    search_btn_1.click(by_js=True)
+    time.sleep(1)
+    search_input_1 = page.ele('#q2')
+    search_input_1.clear()
+    search_input_1.input(company)
+    time.sleep(1)
+    search_btn_2_xpath = "xpath://input[@value='开始搜索']"
+    search_btn_2 = page.ele(search_btn_2_xpath)
+    search_btn_2.click(by_js=True)
 def action_zhengjianhui_govern(page, company):
     page.ele('#content').input(company, clear=True)
     page.ele('.search-icon').click(by_js=True)
@@ -187,6 +235,7 @@ def action_chaozai(page, company):
 
 
 # 对于一步到位的网站，action 填 None 即可
+
 WEB_CONFIG = {
     # === 国家部委及总局 ===
     '发改委-一般检索': {'url': 'https://so.ndrc.gov.cn/s?siteCode=bm04000007&ssl=1&token=&qt={company}', 'action': None, 'post_action': None},
@@ -197,6 +246,7 @@ WEB_CONFIG = {
     '国家市场监管总局': {'url': 'https://www.samr.gov.cn/api-gateway/jpaas-jsearch-web-server/search?serviceId=db6d646f22e541d7a303940a8e8623cc&websiteid=&cateid=aef29dab559a4e9db9da54ff2e1eb92b&q={company}&sortType=2', 'action': None, 'post_action': None},
     '国家统计局': {'url': 'https://www.stats.gov.cn/search/s?qt={company}', 'action': None, 'post_action': None},
     '药监局-一般检索': {'url': 'https://www.nmpa.gov.cn/so/s?tab=all&qt={company}', 'action': None, 'post_action': None},
+    '药监局-高级检索': {'url': 'https://www.nmpa.gov.cn/so/s?tab=all&qt={company}', 'action': action_yaojianju_gaoji, 'post_action': None},
     '海关总署': {'url': 'http://search.customs.gov.cn/eportal/ui?pageId=7690f322e6a0410881e172afbfaaa25c', 'action': action_haiguanzongshu, 'post_action': None},
     '农业农村部-一般检索': {'url': 'https://www.moa.gov.cn/so/s?qt={company}', 'action': None, 'post_action': None},
     '农业农村部-高级检索': {'url': 'https://www.moa.gov.cn/so/s?qt={company}', 'action': action_nongyenongcun_gaoji, 'post_action': None},
@@ -206,6 +256,7 @@ WEB_CONFIG = {
     '生态环境部-高级检索': {'url': 'https://www.mee.gov.cn/searchnew/?searchword={company}', 'action': action_shengtaihuanjingbu_gaoji, 'post_action': None},
     '应急管理': {'url': 'https://www.mem.gov.cn/', 'action': action_yingjiguanli, 'post_action': post_action_yingjiguanli},
     '住建部-一般检索': {'url': 'https://www.mohurd.gov.cn/api-gateway/jpaas-jsearch-web-server/search?serviceId=e2f3058e2a3b4f8abc93eb76e739e3e7&websiteid=&cateid=6ca0f12c0f0642ab8b1dc17028e12ea1&q={company}', 'action': None, 'post_action': None},
+    '住建部-高级检索': {'url': 'https://www.mohurd.gov.cn/api-gateway/jpaas-jsearch-web-server/search?serviceId=e2f3058e2a3b4f8abc93eb76e739e3e7&websiteid=&cateid=6ca0f12c0f0642ab8b1dc17028e12ea1&q={company}', 'action': action_zhujianbu_gaoji, 'post_action': None},
     '国家外汇管理局': {'url':'https://www.safe.gov.cn/safe/search/index.html?q={company}&siteid=safe&order=releasetime', 'action': None, 'post_action': None},
     '中国人民银行-一般检索':{'url':'https://wzdig.pbc.gov.cn/search/pcRender?sr=score+desc&pageId=c177a85bd02b4114bebebd210809f691&ext=&pNo=1&q={company}', 'action': None, 'post_action': None},
     '中国人民银行-高级检索':{'url':'https://wzdig.pbc.gov.cn/search/pcRender?pageId=ba91211b4019456db06f6678d71f5047', 'action': action_renminyinhang_gaoji, 'post_action': None},
@@ -218,7 +269,7 @@ WEB_CONFIG = {
     '自然资源部-高级检索':{'url':'https://www.mnr.gov.cn/','action': action_ziranziyuanbu, 'post_action': None},
     '全国建筑市场监管公共服务平台': {'url': 'https://jzsc.mohurd.gov.cn/since/index', 'action': action_jianzushichang, 'post_action': None},
     '盐行业信用管理':{'url':'http://yan.bcpcn.com/website/xyjl.jsp?keyword={company}&searchtype=1&page=1', 'action': action_yanhangyexinyong, 'post_action': None},
-    '中国政府采购网':{'url':'https://search.ccgp.gov.cn/bxsearch?searchtype=2&page_index=1&start_time=&end_time=&timeType=2&searchparam=&searchchannel=0&dbselect=bidx&kw=快手&bidSort=0&pinMu=0&bidType=0&buyerName=&projectId=&displayZone=&zoneId=&agentName=', 'action': None, 'post_action': None},
+    '中国政府采购网':{'url':'https://search.ccgp.gov.cn/bxsearch?searchtype=2&page_index=1&start_time=&end_time=&timeType=2&searchparam=&searchchannel=0&dbselect=bidx&kw={company}&bidSort=0&pinMu=0&bidType=0&buyerName=&projectId=&displayZone=&zoneId=&agentName=', 'action': None, 'post_action': None},
     '发改委-高级检索':{'url':'https://so.ndrc.gov.cn/s?qt="{company}"&siteCode=bm04000007&tab=all&keyPlace=0&sort=&days=0&fileType=&timeOption=0&adv=1', 'action': None, 'post_action': None},
     # === 证券交易及监管核查 ===
     '证监会-一般检索': {'url': 'http://www.csrc.gov.cn/', 'action': action_zhengjianhui_normal, 'post_action': None},
@@ -229,6 +280,7 @@ WEB_CONFIG = {
     '深交所-监管措施':{'url':'http://www.szse.cn/disclosure/bond/measure/index.html','action': action_shenjiaosuo_jgcs, 'post_action': None},
     '上交所-纪律处分':{'url':'https://www.sse.com.cn/home/search/index.shtml?webswd={company}', 'action': action_shangjiaosuo, 'post_action': None},
     '上交所-监管措施':{'url':'https://www.sse.com.cn/home/search/index.shtml?webswd={company}', 'action': action_shangjiaosuo, 'post_action': None},
+    '全国资源公共交易平台':{'url':'https://www.ggzy.gov.cn/deal/dealList.html?DEAL_TIME=05&FINDTXT={company}', 'action':None ,'post_action':None},
     # === 地方政府及其他专项 ===
     '地方政府处罚': {'url': 'https://www.hebei.gov.cn/s?q={company}&fix=1', 'action': None, 'post_action': None},
     '信用交通': {'url': 'http://219.143.235.38:8080/CreditTraffic/jsp/pc/integrationAll.jsp?flag=1&searchValue={company}', 'action': action_chaozai, 'post_action': None},
@@ -236,4 +288,47 @@ WEB_CONFIG = {
     # === 百度舆情检索 ===
     '百度_违约': {'url': 'https://www.baidu.com/s?wd={company}%20违约&rsv_btype=t&inputT=2224&rsv_t=b47e6furN%2Buws5yK33qvVaMI50O7yxzu2SUStbjtkTStWDxuTokDQSCATjFvvjLKMIr2&rsv_pq=910a7b9f00002f8f&rsv_sug3=15&rsv_sug1=10&rsv_sug7=100&rsv_sug4=2224', 'action': None, 'post_action': None},
     '百度_负面': {'url': 'https://www.baidu.com/s?wd={company}%20负面&rsv_btype=t&inputT=2224&rsv_t=b47e6furN%2Buws5yK33qvVaMI50O7yxzu2SUStbjtkTStWDxuTokDQSCATjFvvjLKMIr2&rsv_pq=910a7b9f00002f8f&rsv_sug3=15&rsv_sug1=10&rsv_sug7=100&rsv_sug4=2224', 'action': None, 'post_action': None},
+}
+default = {
+    '3.发改委-一般检索': {'url': 'https://so.ndrc.gov.cn/s?siteCode=bm04000007&ssl=1&token=&qt={company}', 'action': None, 'post_action': None},
+    '4.发改委-高级检索':{'url':'https://so.ndrc.gov.cn/s?qt="{company}"&siteCode=bm04000007&tab=all&keyPlace=0&sort=&days=0&fileType=&timeOption=0&adv=1', 'action': None, 'post_action': None},
+    '7.全国资源公共交易平台':{'url':'https://www.ggzy.gov.cn/deal/dealList.html?DEAL_TIME=05&FINDTXT={company}', 'action':None ,'post_action':None},
+    '10.应急管理部': {'url': 'https://www.mem.gov.cn/', 'action': action_yingjiguanli, 'post_action': post_action_yingjiguanli},
+    '11.生态环境部-一般检索': {'url': 'https://www.mee.gov.cn/searchnew/?searchword={company}', 'action': None, 'post_action': None},
+    '12.生态环境部-高级检索': {'url': 'https://www.mee.gov.cn/searchnew/?searchword={company}', 'action': action_shengtaihuanjingbu_gaoji, 'post_action': None},
+    '13.工信部-一般检索': {'url': 'https://www.miit.gov.cn/search/index.html?websiteid=110000000000000&pg=&p=&tpl=&category=&jsflIndexSeleted=&q={company}', 'action': None, 'post_action': None},
+    '14.工信部-高级检索': {'url': 'https://www.miit.gov.cn/search/index.html?websiteid=110000000000000&pg=&p=&tpl=&category=&jsflIndexSeleted=&q={company}', 'action': action_gongxinbu_gaoji, 'post_action': None},
+    '15.商务部': {'url': 'https://search.mofcom.gov.cn/allSearch/?siteId=0&keyWordType=title&acSuggest={company}', 'action': None, 'post_action': None},
+    '16.商务信用平台': {'url': 'https://www.315gov.cn/globalSearch.html?keywords={company}&appIds=all', 'action': action_shangwuxinyong, 'post_action': None},
+    '18.国家外汇管理局': {'url':'https://www.safe.gov.cn/safe/search/index.html?q={company}&siteid=safe&order=releasetime', 'action': None, 'post_action': None},
+    '19.中国人民银行-一般检索':{'url':'https://wzdig.pbc.gov.cn/search/pcRender?sr=score+desc&pageId=c177a85bd02b4114bebebd210809f691&ext=&pNo=1&q={company}', 'action': None, 'post_action': None},
+    '20.中国人民银行-高级检索':{'url':'https://wzdig.pbc.gov.cn/search/pcRender?pageId=ba91211b4019456db06f6678d71f5047', 'action': action_renminyinhang_gaoji, 'post_action': None},
+    '22.证监会-一般检索': {'url': 'http://www.csrc.gov.cn/', 'action': action_zhengjianhui_normal, 'post_action': None},
+    '23.证监会-高级检索': {'url': 'http://www.csrc.gov.cn/', 'action': action_zhengjianhui_gaoji, 'post_action': None},
+    '25.中国盐业协会':{'url':'https://www.cnsalt.cn/index/index/search.html?q={company}', 'action': None, 'post_action': post_action_zhongguoyanye},
+    '26.国家统计局': {'url': 'https://www.stats.gov.cn/search/s?qt={company}', 'action': None, 'post_action': None},
+    '27.能源局': {'url': 'https://www.nea.gov.cn/search.htm?kw={company}', 'action': None, 'post_action': None},
+    '28国家市场监管总局': {'url': 'https://www.samr.gov.cn/api-gateway/jpaas-jsearch-web-server/search?serviceId=db6d646f22e541d7a303940a8e8623cc&websiteid=&cateid=aef29dab559a4e9db9da54ff2e1eb92b&q={company}&sortType=2', 'action': None, 'post_action': None},
+    '29.财政部': {'url': 'http://www.mof.gov.cn/index.htm', 'action': action_caizhengbu, 'post_action': None},
+    '30.住建部-一般检索': {'url': 'https://www.mohurd.gov.cn/api-gateway/jpaas-jsearch-web-server/search?serviceId=e2f3058e2a3b4f8abc93eb76e739e3e7&websiteid=&cateid=6ca0f12c0f0642ab8b1dc17028e12ea1&q={company}', 'action': None, 'post_action': None},
+    '31.住建部-高级检索': {'url': 'https://www.mohurd.gov.cn/api-gateway/jpaas-jsearch-web-server/search?serviceId=e2f3058e2a3b4f8abc93eb76e739e3e7&websiteid=&cateid=6ca0f12c0f0642ab8b1dc17028e12ea1&q={company}', 'action': action_zhujianbu_gaoji, 'post_action': None},
+    '32.全国建筑市场监管公共服务平台': {'url': 'https://jzsc.mohurd.gov.cn/since/index', 'action': action_jianzushichang, 'post_action': None},
+    '33.中国电力企业联合会':{'url':'https://cec.org.cn/search/index.html?search={company}', 'action': None, 'post_action': None},
+    '34.农业农村部-一般检索': {'url': 'https://www.moa.gov.cn/so/s?qt={company}', 'action': None, 'post_action': None},
+    '35.农业农村部-高级检索': {'url': 'https://www.moa.gov.cn/so/s?qt={company}', 'action': action_nongyenongcun_gaoji, 'post_action': None},
+    '37.上交所-纪律处分':{'url':'https://www.sse.com.cn/home/search/index.shtml?webswd={company}', 'action': action_shangjiaosuo, 'post_action': None},
+    '38.上交所-监管措施':{'url':'https://www.sse.com.cn/home/search/index.shtml?webswd={company}', 'action': action_shangjiaosuo, 'post_action': None},
+    '39.深交所-纪律处分':{'url':'http://www.szse.cn/disclosure/bond/punish/index.html','action': action_shenjiaosuo_jlcf, 'post_action': None},
+    '40.深交所-监管措施':{'url':'http://www.szse.cn/disclosure/bond/measure/index.html','action': action_shenjiaosuo_jgcs, 'post_action': None},
+    '41.药监局-一般检索': {'url': 'https://www.nmpa.gov.cn/so/s?tab=all&qt={company}', 'action': None, 'post_action': None},
+    '42.药监局-高级检索': {'url': 'https://www.nmpa.gov.cn/so/s?tab=all&qt={company}', 'action': action_yaojianju_gaoji, 'post_action': None},
+    '43.盐行业信用管理':{'url':'http://yan.bcpcn.com/website/xyjl.jsp?keyword={company}&searchtype=1&page=1', 'action': action_yanhangyexinyong, 'post_action': None},
+    '44.自然资源部-一般检索':{'url':'https://www.mnr.gov.cn/','action': action_ziranziyuanbu, 'post_action': None},
+    '45.自然资源部-高级检索':{'url':'https://www.mnr.gov.cn/','action': action_ziranziyuanbu, 'post_action': None},
+    '46.百度-负面': {'url': 'https://www.baidu.com/s?wd={company}%20负面&rsv_btype=t&inputT=2224&rsv_t=b47e6furN%2Buws5yK33qvVaMI50O7yxzu2SUStbjtkTStWDxuTokDQSCATjFvvjLKMIr2&rsv_pq=910a7b9f00002f8f&rsv_sug3=15&rsv_sug1=10&rsv_sug7=100&rsv_sug4=2224', 'action': None, 'post_action': None},
+    '47.中国政府采购网':{'url':'https://search.ccgp.gov.cn/bxsearch?searchtype=2&page_index=1&start_time=&end_time=&timeType=2&searchparam=&searchchannel=0&dbselect=bidx&kw={company}&bidSort=0&pinMu=0&bidType=0&buyerName=&projectId=&displayZone=&zoneId=&agentName=', 'action': None, 'post_action': None},
+    '48.海关总署': {'url': 'http://search.customs.gov.cn/eportal/ui?pageId=7690f322e6a0410881e172afbfaaa25c', 'action': action_haiguanzongshu, 'post_action': None},
+    '50.人力资源和社会保障部':{'url':'https://www.mohrss.gov.cn/hsearch/?searchword={company}', 'action': None, 'post_action': None },
+    '52.安全生产领域失信生产经营单位': {'url': 'https://www.mem.gov.cn/', 'action': action_yingjiguanli, 'post_action': post_action_yingjiguanli},
+    '53.信用交通': {'url': 'http://219.143.235.38:8080/CreditTraffic/jsp/pc/integrationAll.jsp?flag=1&searchValue={company}', 'action': action_chaozai, 'post_action': None}
 }

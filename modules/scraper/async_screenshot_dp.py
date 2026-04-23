@@ -23,7 +23,7 @@ def get_clean_page():
     # 确保使用 ChromiumPage
     page = ChromiumPage(co)
     return page
-def run_batch_screenshot_task(companies, log_queue, base_output, selected_sites):
+def run_batch_screenshot_task(companies, log_queue, base_output, selected_sites, CONFIG):
     page = get_clean_page()
     try:
         for company in companies:
@@ -31,7 +31,7 @@ def run_batch_screenshot_task(companies, log_queue, base_output, selected_sites)
             company_folder = os.path.join(base_output, company)
             os.makedirs(company_folder, exist_ok=True)
             
-            active_config = {k: v for k, v in WEB_CONFIG.items() if k in selected_sites}
+            active_config = {k: v for k, v in CONFIG.items() if k in selected_sites}
             safe_company = quote(company)
             
             main_tab_id = page.latest_tab.tab_id
@@ -120,7 +120,7 @@ def run_batch_screenshot_task(companies, log_queue, base_output, selected_sites)
                             if post_action_func:
                                 post_action_func(tab, company)
                                 
-                            time.sleep(2) # 留出一点缓冲避免动画没播完
+                            time.sleep(0.5) # 留出一点缓冲避免动画没播完
                             
                             screenshot_pyautogui(company_folder, filename)
                             
@@ -142,3 +142,4 @@ def run_batch_screenshot_task(companies, log_queue, base_output, selected_sites)
         log_queue.put(f">>> [错误] {company} 处理全局失败: {repr(e)}\n")
     finally:
         page.quit()
+        log_queue.put("DONE")
