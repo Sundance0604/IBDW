@@ -5,10 +5,8 @@ from urllib.parse import quote
 import undetected_chromedriver as uc
 from modules.scraper.async_func import WEB_CONFIG
 import pyautogui
+import sys
 
-# 获取当前正在运行的 .py 文件的绝对路径并切换工作目录
-current_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(current_dir)
 
 '''使用内窥镜方式截图'''
 def screenshot_selenium(driver, company_folder, filename):
@@ -20,14 +18,40 @@ def screenshot_pyautogui(company_folder, filename):
     save_path = os.path.join(company_folder, f"{filename}.png")
     # 换回 pyautogui，进行纯物理屏幕截图（带任务栏）
     pyautogui.screenshot(save_path)  
-   
+def get_real_base_path():
+    """
+    获取程序运行时的真实根目录，完美兼容 Python 源码运行和 PyInstaller 打包后的 EXE 运行。
+    """
+    if getattr(sys, 'frozen', False):
+        # 1. EXE 运行模式：
+        # 当被打包成 exe 后，sys.frozen 会变成 True。
+        # 此时 sys.executable 会指向 IBDW.exe 的绝对路径（如 D:\IBDW\dist\IBDW\IBDW.exe）
+        # 我们用 os.path.dirname 取它的父目录，就是真正的项目根目录（dist\IBDW）
+        return os.path.dirname(sys.executable)
+    else:
+        # 2. 源码运行模式：
+        # 当前脚本所在位置是: IBDW/modules/scraper/async_screenshot.py
+        # 我们需要向上“扒”三层目录才能回到 IBDW 根目录
+        current_file_path = os.path.abspath(__file__)     # .../IBDW/modules/scraper/async_screenshot.py
+        scraper_dir = os.path.dirname(current_file_path)  # .../IBDW/modules/scraper
+        modules_dir = os.path.dirname(scraper_dir)        # .../IBDW/modules
+        root_dir = os.path.dirname(modules_dir)           # .../IBDW (最终的根目录)
+        
+        return root_dir
+
+APP_ROOT_DIR = get_real_base_path()
 
 def get_clean_driver():
     options = uc.ChromeOptions()
     options.add_argument("--start-maximized") 
     options.add_argument('--disable-popup-blocking')
     options.page_load_strategy = 'none'
-    driver = uc.Chrome(options=options, driver_executable_path=r"chromedriver.exe")
+    
+    # 【核心：精准拼接出 chromedriver.exe 的绝对路径】
+    driver_path = os.path.join(APP_ROOT_DIR, "modules", "scraper", "chromedriver.exe")
+    
+    # 传入路径
+    driver = uc.Chrome(options=options, driver_executable_path=driver_path)
     return driver
 
 def run_batch_screenshot_task(companies, log_queue, base_output, selected_sites):

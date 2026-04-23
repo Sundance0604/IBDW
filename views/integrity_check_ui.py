@@ -7,8 +7,8 @@ import customtkinter as ctk
 from tkinter import filedialog
 
 # 导入爬虫逻辑
-from modules.scraper.async_func import WEB_CONFIG
-from modules.scraper.async_screenshot import run_batch_screenshot_task 
+from modules.scraper.async_func_dp import WEB_CONFIG
+from modules.scraper.async_screenshot_dp import run_batch_screenshot_task 
 
 class IntegrityCheckFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):

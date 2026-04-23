@@ -43,6 +43,22 @@ def action_shangwuxinyong(driver, company):
     input_box.clear()
     input_box.send_keys(company)
 
+def action_ziranziyuanbu(driver, company):
+    """自然资源部：触发搜索并跳转新标签页"""
+    # 1. 定位并等待输入框就绪 (根据 id="searchText" 定位)
+    search_input = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "searchText")))
+    search_input.clear()
+    search_input.send_keys(company)
+    search_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//a[contains(@onclick, 'onSearch')]"))
+    )
+    old_count = len(driver.window_handles)
+    try:
+        search_button.click()
+    except:
+        driver.execute_script("arguments[0].click();", search_button)
+    switch_to_new_window_if_any(driver, old_count)
+
 '''应急管理：阶段一（点火）'''
 def action_yingjiguanli(driver, company):
     search_input = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "iptSword")))
@@ -65,13 +81,63 @@ def action_jiaotongbu(driver, company):
     except:
         driver.execute_script("arguments[0].click();", search_button)
     switch_to_new_window_if_any(driver, old_count)
-
+'''深交所-纪律处分'''
+def action_shenjiaosuo_jlcf(driver, company):
+    search_input = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "ZQ_JLCF_tab1_txtGjz")))
+    search_input.clear()
+    search_input.send_keys(company)
+    search_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn-query-primary"))
+    )
+    old_count = len(driver.window_handles)
+    try:
+        search_button.click()
+    except:
+        driver.execute_script("arguments[0].click();", search_button)
+    switch_to_new_window_if_any(driver, old_count)
+'''深交所-监管措施'''
+def action_shenjiaosuo_jgcs(driver, company):
+    search_input = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "ZQ_JGCS_tab1_txtGjz")))
+    search_input.clear()
+    search_input.send_keys(company)
+    search_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn-query-primary"))
+    )
+    old_count = len(driver.window_handles)
+    try:
+        search_button.click()
+    except:
+        driver.execute_script("arguments[0].click();", search_button)
+    switch_to_new_window_if_any(driver, old_count)
+'''全国建筑市场监管公共服务平台'''
+def action_jianzushichang(driver, company):
+    search_input = WebDriverWait(driver, 10).until(
+    EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), '诚信记录主体')]/ancestor::div[contains(@class, 'el-col')]//input"))
+    )
+    search_input.clear()
+    search_input.send_keys(company)
+    old_count = len(driver.window_handles)
+    search_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//span[contains(@class, 'ssButton') and text()='查询']"))
+    )
+    try:
+        search_button.click()
+    except:
+        driver.execute_script("arguments[0].click();", search_button)
+    switch_to_new_window_if_any(driver, old_count)
 '''应急管理：阶段三（截图前收尾）'''
 def post_action_yingjiguanli(driver, company):
     # 此时页面已经彻底加载完毕，填进去的字绝对不会被覆盖
     search_input_new = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, "sw")))
     search_input_new.clear()
     search_input_new.send_keys(company)
+"""中国盐业协会：仅在搜索框输入文本，不执行点击"""
+def post_action_zhongguoyanye(driver, company):
+    # 定位并等待输入框就绪 (根据 name="q" 定位)
+    search_input = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "q")))
+    # 清空输入框并填入公司名称
+    search_input.clear()
+    search_input.send_keys(company)
 
 def action_zhengjianhui_normal(driver, company):
     search_input = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "searchWord")))
@@ -162,18 +228,21 @@ WEB_CONFIG = {
     '住建部-一般检索': {'url': 'https://www.mohurd.gov.cn/api-gateway/jpaas-jsearch-web-server/search?serviceId=e2f3058e2a3b4f8abc93eb76e739e3e7&websiteid=&cateid=6ca0f12c0f0642ab8b1dc17028e12ea1&q={company}', 'action': None, 'post_action': None},
     '国家外汇管理局': {'url':'https://www.safe.gov.cn/safe/search/index.html?q={company}&siteid=safe&order=releasetime', 'action': None, 'post_action': None},
     '中国人民银行-一般检索':{'url':'https://wzdig.pbc.gov.cn/search/pcRender?sr=score+desc&pageId=c177a85bd02b4114bebebd210809f691&ext=&pNo=1&q={company}', 'action': None, 'post_action': None},
-    '中国盐业协会':{'url':'https://www.cnsalt.cn/index/index/search.html?q={company}', 'action': None, 'post_action': None},
+    '中国盐业协会':{'url':'https://www.cnsalt.cn/index/index/search.html?q={company}', 'action': None, 'post_action': post_action_zhongguoyanye},
     '中国电力企业联合会':{'url':'https://cec.org.cn/search/index.html?search={company}', 'action': None, 'post_action': None},
     #'中国政府采购':{'url':"https://search.ccgp.gov.cn/bxsearch?searchtype=2&page_index=1&bidSort=0&buyerName=&projectId=&pinMu=0&bidType=0&dbselect=bidx&kw={company}&start_time=2025%3A10%3A20&end_time=2026%3A04%3A20&timeType=5&displayZone=&zoneId=&pppStatus=0&agentName=", 'action': None, 'post_action': None},
     '交通运输部': {'url': 'https://www.mot.gov.cn/', 'action': action_jiaotongbu, 'post_action': None},
     '人力资源和社会保障部':{'url':'https://www.mohrss.gov.cn/hsearch/?searchword={company}', 'action': None, 'post_action': None },
     '安全生产领域失信生产经营单位': {'url': 'https://www.mem.gov.cn/', 'action': action_yingjiguanli, 'post_action': post_action_yingjiguanli},
-
-    # === 证监会及监管核查 ===
+    '自然资源部-一般检索':{'url':'https://www.mnr.gov.cn/','action': action_ziranziyuanbu, 'post_action': None},
+    '自然资源部-高级检索':{'url':'https://www.mnr.gov.cn/','action': action_ziranziyuanbu, 'post_action': None},
+    '全国建筑市场监管公共服务平台': {'url': 'https://jzsc.mohurd.gov.cn/since/index', 'action': action_jianzushichang, 'post_action': None},
+    # === 证券交易及监管核查 ===
     '证监会-一般检索': {'url': 'http://www.csrc.gov.cn/', 'action': action_zhengjianhui_normal, 'post_action': None},
     '证监会-政府公开信息': {'url': 'http://www.csrc.gov.cn/csrc/c100033/zfxxgk_zdgk.shtml', 'action': action_zhengjianhui_govern, 'post_action': None},
     '发行人行贿核查': {'url': 'https://www.baidu.com/s?wd={company}%20行贿核查&rsv_btype=t&inputT=2224&rsv_t=b47e6furN%2Buws5yK33qvVaMI50O7yxzu2SUStbjtkTStWDxuTokDQSCATjFvvjLKMIr2&rsv_pq=910a7b9f00002f8f&rsv_sug3=15&rsv_sug1=10&rsv_sug7=100&rsv_sug4=2224', 'action': None, 'post_action': None},
-    
+    '深交所-纪律处分':{'url':'http://www.szse.cn/disclosure/bond/punish/index.html','action': action_shenjiaosuo_jlcf, 'post_action': None},
+    '深交所-监管措施':{'url':'http://www.szse.cn/disclosure/bond/measure/index.html','action': action_shenjiaosuo_jgcs, 'post_action': None},
     # === 地方政府及其他专项 ===
     '地方政府处罚': {'url': 'https://www.hebei.gov.cn/s?q={company}&fix=1', 'action': None, 'post_action': None},
     '信用交通': {'url': 'http://219.143.235.38:8080/CreditTraffic/jsp/pc/integrationAll.jsp?flag=1&searchValue={company}', 'action': action_chaozai, 'post_action': None},

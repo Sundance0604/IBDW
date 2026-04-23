@@ -1,0 +1,7 @@
+customtkinter
+PyMuPDF
+openai
+pyautogui
+selenium
+undetected-chromedriver
+pyinstaller
