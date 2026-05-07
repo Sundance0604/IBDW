@@ -6,7 +6,8 @@ import customtkinter as ctk
 from tkinter import filedialog
 
 
-from modules.scraper.async_func_dp import default, WEB_CONFIG  # 导入你新建的 default 字典
+from modules.scraper.async_func_dp import default, WEB_CONFIG,default_2
+  # 导入你新建的 default 字典
 from modules.scraper.async_screenshot_dp import run_batch_screenshot_task 
 
 class IntegrityCheckFrame(ctk.CTkFrame):
@@ -51,9 +52,10 @@ class IntegrityCheckFrame(ctk.CTkFrame):
         self.add_comp_btn = ctk.CTkButton(self.input_section, text="➕ 添加", width=70, command=self.add_company)
         self.add_comp_btn.pack(side="left", padx=5)
         
+        # 快捷方案下拉菜单
         self.preset_menu = ctk.CTkOptionMenu(
             self.input_section, 
-            values=["自定义手动选择", "默认配置方案"],
+            values=["自定义手动选择", "默认配置方案", "债券模板"], # <--- 这里加上新选项
             command=self.apply_preset,
             width=130
         )
@@ -110,6 +112,10 @@ class IntegrityCheckFrame(ctk.CTkFrame):
             self.active_config = default  # 【新增】同步切换后台字典
             self.render_checkboxes(default)
             self.write_log(">>> 已切换至 [默认配置方案]，核查网页列表已更新。\n")
+        elif choice == "债券模板":
+            self.active_config = default_2  # 【新增】同步切换后台字典
+            self.render_checkboxes(default_2)
+            self.write_log(">>> 已切换至 债券模板，核查网页列表已更新。\n")
         else:
             self.active_config = WEB_CONFIG # 【新增】同步切换后台字典
             self.render_checkboxes(WEB_CONFIG)

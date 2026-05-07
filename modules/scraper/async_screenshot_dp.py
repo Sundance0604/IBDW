@@ -7,10 +7,6 @@ from DrissionPage import ChromiumPage, ChromiumOptions
 # 引入 dp 版配置
 from modules.scraper.async_func_dp import WEB_CONFIG
 
-# 获取当前正在运行的 .py 文件的绝对路径并切换工作目录
-current_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(current_dir)
-
 def screenshot_pyautogui(company_folder, filename):
     save_path = os.path.join(company_folder, f"{filename}.png")
     # 纯物理屏幕截图（带任务栏）

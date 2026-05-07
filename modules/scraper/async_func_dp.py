@@ -332,3 +332,31 @@ default = {
     '52.安全生产领域失信生产经营单位': {'url': 'https://www.mem.gov.cn/', 'action': action_yingjiguanli, 'post_action': post_action_yingjiguanli},
     '53.信用交通': {'url': 'http://219.143.235.38:8080/CreditTraffic/jsp/pc/integrationAll.jsp?flag=1&searchValue={company}', 'action': action_chaozai, 'post_action': None}
 }
+default_2 = {
+    # === 国家部委及总局 ===
+    '3.发改委': {'url': 'https://so.ndrc.gov.cn/s?siteCode=bm04000007&ssl=1&token=&qt={company}', 'action': None, 'post_action': None},
+    '1.财政部': {'url': 'http://www.mof.gov.cn/index.htm', 'action': action_caizhengbu, 'post_action': None},
+    '5.工信部': {'url': 'https://www.miit.gov.cn/search/index.html?websiteid=110000000000000&pg=&p=&tpl=&category=&jsflIndexSeleted=&q={company}', 'action': None, 'post_action': None},
+    '6.能源局': {'url': 'https://www.nea.gov.cn/search.htm?kw={company}', 'action': None, 'post_action': None},
+    '7.国家市场监管总局': {'url': 'https://www.samr.gov.cn/api-gateway/jpaas-jsearch-web-server/search?serviceId=db6d646f22e541d7a303940a8e8623cc&websiteid=&cateid=aef29dab559a4e9db9da54ff2e1eb92b&q={company}&sortType=2', 'action': None, 'post_action': None},
+    '8.国家统计局': {'url': 'https://www.stats.gov.cn/search/s?qt={company}', 'action': None, 'post_action': None},
+    '9.药监局': {'url': 'https://www.nmpa.gov.cn/so/s?tab=all&qt={company}', 'action': None, 'post_action': None},
+    '11.海关总署': {'url': 'http://search.customs.gov.cn/eportal/ui?pageId=7690f322e6a0410881e172afbfaaa25c', 'action': action_haiguanzongshu, 'post_action': None},
+    '12.农业农村部-一般检索': {'url': 'https://www.moa.gov.cn/so/s?qt={company}', 'action': None, 'post_action': None},
+    '13.商务部': {'url': 'https://search.mofcom.gov.cn/allSearch/?siteId=0&keyWordType=title&acSuggest={company}', 'action': None, 'post_action': None},
+    '14.商务信用平台': {'url': 'https://www.315gov.cn/globalSearch.html?keywords={company}&appIds=all', 'action': action_shangwuxinyong, 'post_action': None},
+    '15.生态环境部': {'url': 'https://www.mee.gov.cn/searchnew/?searchword={company}', 'action': None, 'post_action': None},
+    '21.住建部': {'url': 'https://www.mohurd.gov.cn/api-gateway/jpaas-jsearch-web-server/search?serviceId=e2f3058e2a3b4f8abc93eb76e739e3e7&websiteid=&cateid=6ca0f12c0f0642ab8b1dc17028e12ea1&q={company}', 'action': None, 'post_action': None},
+    '19.应急管理部': {'url': 'https://www.mem.gov.cn/', 'action': action_yingjiguanli, 'post_action': post_action_yingjiguanli},
+    '22.自然资源部':{'url':'https://www.mnr.gov.cn/','action': action_ziranziyuanbu, 'post_action': None},
+    '23.百度_违约': {'url': 'https://www.baidu.com/s?wd={company}%20违约&rsv_btype=t&inputT=2224&rsv_t=b47e6furN%2Buws5yK33qvVaMI50O7yxzu2SUStbjtkTStWDxuTokDQSCATjFvvjLKMIr2&rsv_pq=910a7b9f00002f8f&rsv_sug3=15&rsv_sug1=10&rsv_sug7=100&rsv_sug4=2224', 'action': None, 'post_action': None},
+    '26.深交所-纪律处分':{'url':'http://www.szse.cn/disclosure/bond/punish/index.html','action': action_shenjiaosuo_jlcf, 'post_action': None},
+    '26.深交所-监管措施':{'url':'http://www.szse.cn/disclosure/bond/measure/index.html','action': action_shenjiaosuo_jgcs, 'post_action': None},
+    '25.上交所-纪律处分':{'url':'https://www.sse.com.cn/home/search/index.shtml?webswd={company}', 'action': action_shangjiaosuo, 'post_action': None},
+    '25.上交所-监管措施':{'url':'https://www.sse.com.cn/home/search/index.shtml?webswd={company}', 'action': action_shangjiaosuo, 'post_action': None},
+    '27.证监会-一般检索': {'url': 'http://www.csrc.gov.cn/', 'action': action_zhengjianhui_normal, 'post_action': None},
+    '28.证监会-政府公开信息': {'url': 'http://www.csrc.gov.cn/csrc/c100033/zfxxgk_zdgk.shtml', 'action': action_zhengjianhui_govern, 'post_action': None},
+    '32.地方政府处罚': {'url': 'https://www.hebei.gov.cn/s?q={company}&fix=1', 'action': None, 'post_action': None},
+    '33.百度-行贿核查': {'url': 'https://www.baidu.com/s?wd={company}%20行贿核查&rsv_btype=t&inputT=2224&rsv_t=b47e6furN%2Buws5yK33qvVaMI50O7yxzu2SUStbjtkTStWDxuTokDQSCATjFvvjLKMIr2&rsv_pq=910a7b9f00002f8f&rsv_sug3=15&rsv_sug1=10&rsv_sug7=100&rsv_sug4=2224', 'action': None, 'post_action': None},
+   
+}
